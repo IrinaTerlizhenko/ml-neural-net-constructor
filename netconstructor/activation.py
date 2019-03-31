@@ -1,7 +1,7 @@
 # todo: add parameter for degree
 import numpy as np
 
-from nn.layer import Layer
+from netconstructor.layer import Layer
 
 
 class ReluActivation(Layer):

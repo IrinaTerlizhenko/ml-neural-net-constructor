@@ -2,9 +2,9 @@ from typing import List
 
 import numpy as np
 
-from nn.activation import ReluActivation, LogisticActivation
-from nn.error import SquareError, Error
-from nn.layer import Layer, DenseLayer
+from netconstructor.activation import ReluActivation, LogisticActivation
+from netconstructor.error import SquareError, Error
+from netconstructor.layer import Layer, DenseLayer
 
 
 class Neuron:
@@ -26,7 +26,10 @@ class NeuralNetwork:
         self._layers: List[Layer] = []
         self._error: Error = None
 
-    def train(self, x: np.ndarray, y: np.ndarray, num_iterations: int) -> None:
+    def train(self, x: np.ndarray, y: np.ndarray, num_iterations: int) -> float:
+        if num_iterations <= 0:
+            raise ValueError("Number of iterations must be a positive integer number")
+
         output = x.copy()
 
         for i in range(0, num_iterations):
@@ -41,6 +44,8 @@ class NeuralNetwork:
 
             for layer in reversed(self._layers):
                 output = layer.back_propagate(output)
+
+        return error
 
     def _reduce_error(self, output_errors: np.ndarray) -> float:
         return output_errors.sum()

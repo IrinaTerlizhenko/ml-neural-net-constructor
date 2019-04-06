@@ -1,3 +1,4 @@
+import logging
 from typing import List, Tuple
 
 import numpy as np
@@ -5,14 +6,6 @@ import numpy as np
 from netconstructor.activation import ReluActivation, LogisticActivation, EluActivation
 from netconstructor.error import SquareError, Error
 from netconstructor.layer import Layer, DenseLayer, BatchNorm
-
-
-class Neuron:
-
-    def __init__(self, bias: float, weights: List[float] = None) -> None:
-        self._bias = bias
-        # zero weight means no link
-        self._weights = weights
 
 
 class NeuralNetwork:
@@ -30,7 +23,8 @@ class NeuralNetwork:
         if num_iterations <= 0:
             raise ValueError("Number of iterations must be a positive integer number")
 
-        output = x.copy()
+        # reshape to at least two dimensional array
+        output = x.copy() if len(x.shape) > 1 else x.copy().reshape(1, len(x))
 
         for i in range(0, num_iterations):
             for layer in self._layers:
@@ -38,7 +32,7 @@ class NeuralNetwork:
 
             output_errors = self._error.propagate(output, y)
             error = self._reduce_error(output_errors)
-            print(error)  # todo logging
+            logging.info(error)  # TODO: logging
 
             output = self._error.back_propagate(output, y)
 
@@ -48,17 +42,17 @@ class NeuralNetwork:
         return error
 
     def _reduce_error(self, output_errors: np.ndarray) -> float:
-        return output_errors.sum()
+        return output_errors.sum()  # TODO: AXIS=1
 
     def with_square_error(self) -> "NeuralNetwork":
         self._error = SquareError()
         return self
 
-    def with_dense_layer(self, num_neurons: int, initial_weights: np.ndarray = None, initial_biases: np.ndarray = None
+    def with_dense_layer(self, num_outputs: int, initial_weights: np.ndarray = None, initial_biases: np.ndarray = None
                          ) -> "NeuralNetwork":
         latest_layer, num_inputs = self._load_net_characteristics()
 
-        new_layer = DenseLayer(num_inputs, num_neurons, self._learning_rate, initial_weights, initial_biases)
+        new_layer = DenseLayer(num_inputs, num_outputs, self._learning_rate, initial_weights, initial_biases)
 
         self._layers.append(new_layer)
         return self

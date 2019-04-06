@@ -1,7 +1,10 @@
+import logging
+
 import numpy as np
 
 from netconstructor.network import NeuralNetwork
 
+logging.basicConfig(level=logging.DEBUG)
 
 EXPECTED_ONE_ITERATION_ERROR = 0.2983711087600027
 
@@ -19,9 +22,9 @@ w2 = np.array([
 
 b2 = np.array([.60, .60])
 
-x = np.array([.05, .10])
+x = np.array([[.05, .10], [.05, .10], [.05, .10]])
 
-y = np.array([.01, .99])
+y = np.array([[.01, .99], [.01, .99], [.01, .99]])
 
 
 def test_elu():

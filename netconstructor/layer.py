@@ -1,6 +1,7 @@
 from abc import ABC, abstractmethod
 
 import numpy as np
+import math
 
 
 class Layer(ABC):
@@ -26,7 +27,8 @@ class DenseLayer(Layer):
         self._learning_rate = learning_rate
 
         self._weight = initial_weights if initial_weights is not None \
-            else np.ones(shape=(num_inputs, num_outputs)) / 2.0
+            else np.random.uniform(-1. / math.sqrt(num_inputs), 1. / math.sqrt(num_inputs), num_inputs * num_outputs) \
+            .reshape(num_inputs, num_outputs)
         self._bias = initial_biases if initial_biases is not None \
             else np.zeros(shape=(1, num_outputs))
 
@@ -34,20 +36,23 @@ class DenseLayer(Layer):
 
     def propagate(self, x: np.ndarray) -> np.ndarray:
         self._current_inputs = x.copy()
-        return self._weight.dot(x) + self._bias
+        return x.dot(self._weight) + self._bias
 
     def back_propagate(self, dx: np.ndarray) -> np.ndarray:
-        output_dx = self._weight.dot(dx)
+        output_dx = dx.dot(self._weight.T)
 
         # diff_weights is something that we want to multiply by learning rate and subtract from each weight
-        diff_weights = dx * self._current_inputs  # element-wise
+        arr = []  # TODO: REFACTOR
+        for inp, out in zip(self._current_inputs, dx):
+            arr.append(np.outer(inp, out))
+        diff_weights = np.array(arr)
         # but diff_weight contains unique values for each output of the previous layer
         # (i.e, is a vector of shape _num_inputs * 1)
         # we have _num_inputs * _num_outputs weights, but each bunch of size _num_outputs corresponds to the same output
         # (i.e. will have the same gradient)
         # so we need just to repeat diff_weights _num_outputs times and shape it correctly
-        diff_weights = np.tile(diff_weights, self._num_outputs).reshape((self._num_outputs, self._num_inputs)).T
-        self._weight -= self._learning_rate * diff_weights
+        cumulative_diff_weights = np.sum(diff_weights, 0)
+        self._weight -= self._learning_rate * cumulative_diff_weights
 
         return output_dx
 

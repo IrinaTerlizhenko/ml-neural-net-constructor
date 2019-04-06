@@ -1,10 +1,10 @@
-from typing import List
+from typing import List, Tuple
 
 import numpy as np
 
-from netconstructor.activation import ReluActivation, LogisticActivation
+from netconstructor.activation import ReluActivation, LogisticActivation, EluActivation
 from netconstructor.error import SquareError, Error
-from netconstructor.layer import Layer, DenseLayer
+from netconstructor.layer import Layer, DenseLayer, BatchNorm
 
 
 class Neuron:
@@ -56,28 +56,46 @@ class NeuralNetwork:
 
     def with_dense_layer(self, num_neurons: int, initial_weights: np.ndarray = None, initial_biases: np.ndarray = None
                          ) -> "NeuralNetwork":
-        latest_layer = self._layers[-1] if self._layers else None
-        num_inputs = latest_layer.num_outputs if latest_layer else self._num_inputs
+        latest_layer, num_inputs = self._load_net_characteristics()
 
         new_layer = DenseLayer(num_inputs, num_neurons, self._learning_rate, initial_weights, initial_biases)
 
         self._layers.append(new_layer)
         return self
 
+    def with_batch_norm(self, gamma: float = 1, beta: float = 0) -> "NeuralNetwork":
+        latest_layer, num_inputs = self._load_net_characteristics()
+
+        new_layer = BatchNorm(num_inputs, self._learning_rate, gamma, beta)
+
+        self._layers.append(new_layer)
+        return self
+
     def with_relu_activation(self) -> "NeuralNetwork":
-        latest_layer = self._layers[-1] if self._layers else None
-        num_inputs = latest_layer.num_outputs if latest_layer else self._num_inputs
+        latest_layer, num_inputs = self._load_net_characteristics()
 
         new_layer = ReluActivation(num_inputs)
 
         self._layers.append(new_layer)
         return self
 
+    def with_elu_activation(self) -> "NeuralNetwork":
+        latest_layer, num_inputs = self._load_net_characteristics()
+
+        new_layer = EluActivation(num_inputs)
+
+        self._layers.append(new_layer)
+        return self
+
     def with_logistic_activation(self) -> "NeuralNetwork":
-        latest_layer = self._layers[-1] if self._layers else None
-        num_inputs = latest_layer.num_outputs if latest_layer else self._num_inputs
+        latest_layer, num_inputs = self._load_net_characteristics()
 
         new_layer = LogisticActivation(num_inputs)
 
         self._layers.append(new_layer)
         return self
+
+    def _load_net_characteristics(self) -> Tuple[Layer, int]:
+        latest_layer = self._layers[-1] if self._layers else None
+        num_inputs = latest_layer.num_outputs if latest_layer else self._num_inputs
+        return latest_layer, num_inputs

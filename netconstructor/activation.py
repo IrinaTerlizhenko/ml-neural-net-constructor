@@ -11,7 +11,8 @@ class ReluActivation(Layer):
         self._current_output: np.ndarray = None
 
     def propagate(self, x: np.ndarray) -> np.ndarray:
-        return np.max(x, 0)  # FIXME: SHOULD WE SAVE CURRENT OUTPUT? ALSO SECOND PARAM IS AXIS AND NOT MAX_VALUE
+        self._current_output = x.copy()
+        return np.maximum(x, 0)
 
     def back_propagate(self, dx: np.ndarray) -> np.ndarray:
         relu_dx = self._current_output > 0  # ones when dx > 0 and zeros otherwise

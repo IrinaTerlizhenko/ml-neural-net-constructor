@@ -5,15 +5,15 @@ from netconstructor.network import NeuralNetwork
 EXPECTED_ONE_ITERATION_ERROR = 0.2983711087600027
 
 w1 = np.array([
-    [.15, .20],
-    [.25, .30]
+    [.15, .25],
+    [.20, .30]
 ])
 
 b1 = np.array([.35, .35])
 
 w2 = np.array([
-    [.40, .45],
-    [.50, .55]
+    [.40, .50],
+    [.45, .55]
 ])
 
 b2 = np.array([.60, .60])

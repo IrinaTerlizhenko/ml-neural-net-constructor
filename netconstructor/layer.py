@@ -1,3 +1,4 @@
+import logging
 from abc import ABC, abstractmethod
 
 import numpy as np
@@ -41,18 +42,19 @@ class DenseLayer(Layer):
     def back_propagate(self, dx: np.ndarray) -> np.ndarray:
         output_dx = dx.dot(self._weight.T)
 
-        # diff_weights is something that we want to multiply by learning rate and subtract from each weight
         arr = []  # TODO: REFACTOR
-        for inp, out in zip(self._current_inputs, dx):
-            arr.append(np.outer(inp, out))
+        for single_input_obj, single_gradient in zip(self._current_inputs, dx):
+            arr.append(np.outer(single_input_obj, single_gradient))
         diff_weights = np.array(arr)
-        # but diff_weight contains unique values for each output of the previous layer
-        # (i.e, is a vector of shape _num_inputs * 1)
-        # we have _num_inputs * _num_outputs weights, but each bunch of size _num_outputs corresponds to the same output
-        # (i.e. will have the same gradient)
-        # so we need just to repeat diff_weights _num_outputs times and shape it correctly
+
         cumulative_diff_weights = np.sum(diff_weights, 0)
         self._weight -= self._learning_rate * cumulative_diff_weights
+
+        logging.debug(f"weights: {self._weight}")
+
+        # todo ?
+        cumulative_biases = np.sum(dx, 0)  # gradient for bias is always 1
+        self._bias -= self._learning_rate * cumulative_biases
 
         return output_dx
 

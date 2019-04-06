@@ -5,7 +5,7 @@ import tensorflow as tf
 
 from netconstructor.network import NeuralNetwork
 
-logging.basicConfig(level=logging.DEBUG)
+logging.basicConfig(level=logging.INFO)
 
 NUM_CLASSES = 10
 
@@ -31,10 +31,15 @@ test_images = mnist.test.images
 test_labels = one_hot(mnist.test.labels)
 
 
-def test_mnist_10000_iterations():
+def test_mnist_1000():
     network = _build_batch_norm_after_activation_network()
 
-    network.train(train_images[:10], train_labels[:10], 1000)
+    for i in range(0, 100):
+        network.train(train_images[i*10:(i+1)*10], train_labels[i*10:(i+1)*10], 1)
+
+
+if __name__ == "__main__":
+    test_mnist_1000()
 
 
 def _build_batch_norm_after_activation_network() -> NeuralNetwork:

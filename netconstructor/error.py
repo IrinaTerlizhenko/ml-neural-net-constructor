@@ -28,7 +28,7 @@ class CrossEntropyError(Error):
     EPSILON = 1e-12
 
     def propagate(self, output: np.ndarray, target: np.ndarray) -> np.ndarray:
-        if (output < 0).any() or (output > 1).any():  # todo target ?
+        if (output < 0).any() or (output > 1).any():
             raise ValueError("Output must be in the range (0, 1). Consider using softmax as the output layer.")
         # we allow zeros but they spoil computations
         output = np.clip(output, a_min=CrossEntropyError.EPSILON, a_max=None)

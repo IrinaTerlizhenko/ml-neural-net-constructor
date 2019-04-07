@@ -34,7 +34,7 @@ class NeuralNetwork:
             error = self._reduce_error(output_errors)
             logging.info(f"iteration: {i}, error: {error}")
 
-            output = self._error.back_propagate(output, y)  # todo output_errors ?
+            output = self._error.back_propagate(output, y)
 
             for layer in reversed(self._layers):
                 output = layer.back_propagate(output)
@@ -42,7 +42,7 @@ class NeuralNetwork:
         return error
 
     def _reduce_error(self, output_errors: np.ndarray) -> float:
-        return output_errors.sum()  # TODO: AXIS=1
+        return output_errors.sum()  # AXIS=1 if we want to see separate error for each batch element
 
     def with_square_error(self) -> "NeuralNetwork":
         self._error = SquareError()

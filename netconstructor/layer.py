@@ -52,7 +52,6 @@ class DenseLayer(Layer):
 
         logging.debug(f"weights: {self._weight}")
 
-        # todo ?
         cumulative_biases = np.sum(dx, 0)  # gradient for bias is always 1
         self._bias -= self._learning_rate * cumulative_biases
 

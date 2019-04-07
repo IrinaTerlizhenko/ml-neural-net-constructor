@@ -31,7 +31,6 @@ test_images = mnist.test.images
 test_labels = one_hot(mnist.test.labels)
 
 
-# todo
 def test_mnist():
     network = _build_batch_norm_after_activation_network()
 
@@ -41,6 +40,8 @@ def test_mnist():
         network.train(train_images[i * batch_size: (i + 1) * batch_size],
                       train_labels[i * batch_size: (i + 1) * batch_size], 1)
     # network.train(train_images[:1], train_labels[:1], 100)
+
+    # todo: assert
 
 
 def test_mnist_on_zeros():
@@ -54,7 +55,10 @@ def test_mnist_on_zeros():
             labels.append(train_labels[i])
 
     for train_image, train_label in zip(train, labels):
-        network.train(train_image, train_label, 1)
+        error = network.train(train_image, train_label, 1)
+
+    expected_error = 1e-30
+    assert error < expected_error
 
 
 def test_mnist_on_zeros_in_batch():
@@ -72,7 +76,10 @@ def test_mnist_on_zeros_in_batch():
     labels = np.array(labels)
 
     for i in range(0, int(len(train) / batch_size)):
-        network.train(train[i*batch_size: (i+1)*batch_size], labels[i*batch_size: (i+1)*batch_size], batch_size)
+        error = network.train(train[i*batch_size: (i+1)*batch_size], labels[i*batch_size: (i+1)*batch_size], batch_size)
+
+    expected_error = 1e-5
+    assert error < expected_error
 
 
 def _build_batch_norm_after_activation_network() -> NeuralNetwork:

@@ -25,23 +25,31 @@ logging.basicConfig(level=logging.INFO)
 def test_softmax():
     net = _build_softmax_network()
 
-    net.train(X, Y, 60)
+    error = net.train(X, Y, 60)
+
+    expected_error = 1e-10
+    assert error < expected_error
 
 
 def test_softmax_batch():
     net = _build_softmax_network()
 
-    net.train(X_BATCH, Y_BATCH, 60)
+    error = net.train(X_BATCH, Y_BATCH, 60)
+
+    expected_error = 2.0
+    assert error < expected_error
 
 
 def test_article_softmax():
     net = _build_article_softmax_network()
 
-    net.train(x, y, 60)
+    error = net.train(x, y, 60)
+
+    expected_error = 1e-10
+    assert error < expected_error
 
 
 def _build_softmax_network() -> NeuralNetwork:
-    # top results with batch norm!
     return NeuralNetwork(4) \
         .with_dense_layer(4) \
         .with_softmax_activation() \
@@ -53,7 +61,6 @@ def _build_softmax_network() -> NeuralNetwork:
 
 
 def _build_article_softmax_network() -> NeuralNetwork:
-    # top results with batch norm!
     return NeuralNetwork(2) \
         .with_dense_layer(2, w1, b1) \
         .with_softmax_activation() \

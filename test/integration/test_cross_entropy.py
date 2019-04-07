@@ -5,7 +5,6 @@ import numpy as np
 from network import NeuralNetwork
 from test.integration.utils import w1, b1, w2, b2, x, y
 
-
 X = np.array([1, 2, 3, 4])
 X_BATCH = np.array([
     [1, 2, 3, 4],
@@ -18,15 +17,15 @@ Y_BATCH = np.array([
     [2.0, 2.0, 2.0],
 ])
 
-
 logging.basicConfig(level=logging.INFO)
 
-# todo !!!
 
 def test_cross_entropy():
     net = _build_cross_entropy_network()
 
     net.train(X, Y, 60)
+
+    # todo: assert
 
 
 def test_cross_entropy_batch():
@@ -34,11 +33,15 @@ def test_cross_entropy_batch():
 
     net.train(X_BATCH, Y_BATCH, 60)
 
+    # todo: assert
+
 
 def test_article_cross_entropy():
     net = _build_article_cross_entropy_network()
 
     net.train(x, y, 1000)
+
+    # todo: assert
 
 
 def _build_cross_entropy_network() -> NeuralNetwork:

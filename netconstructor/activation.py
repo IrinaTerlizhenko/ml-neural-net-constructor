@@ -49,7 +49,9 @@ class LogisticActivation(Layer):
 
 class LeakyReluActivation(Layer):
     def __init__(self, num_neurons: int, alpha: float = 0.01) -> None:
-        assert 0 < alpha < 0.5, "alpha should be between 0 and 0.5"  # todo raise
+        if not 0 < alpha < 0.5:
+            raise ValueError("alpha must be in the range (0, 0.5)")
+
         super().__init__()
         self._num_neurons = num_neurons
         self._alpha = alpha
@@ -74,7 +76,9 @@ class LeakyReluActivation(Layer):
 
 class ParamReluActivation(Layer):
     def __init__(self, num_neurons: int, learning_rate: float, alpha: float = 0.01) -> None:
-        assert 0 < alpha < 0.5, "alpha should be between 0 and 0.5"  # todo raise
+        if not 0 < alpha < 0.5:
+            raise ValueError("alpha must be in the range (0, 0.5)")
+
         super().__init__()
         self._num_neurons = num_neurons
         self._learning_rate = learning_rate
@@ -105,7 +109,9 @@ class ParamReluActivation(Layer):
 
 class EluActivation(Layer):
     def __init__(self, num_neurons: int, alpha: float = 0.01) -> None:
-        assert 0 <= alpha, "alpha should be not less than 0"  # todo raise
+        if alpha > 0:
+            raise ValueError("alpha should be not less than 0")
+
         super().__init__()
         self._num_neurons = num_neurons
         self._alpha = alpha
@@ -137,7 +143,7 @@ class SoftmaxActivation(Layer):
         self._current_output: np.ndarray = None
 
     def propagate(self, x: np.ndarray) -> np.ndarray:
-        exps = np.exp(x - np.max(x, axis=1))  # todo  - np.max(x, axis=1) ?
+        exps = np.exp(x - np.max(x, axis=1, keepdims=True))
         self._current_output = exps / np.sum(exps, axis=1, keepdims=True)
         return self._current_output
 
@@ -151,7 +157,7 @@ class SoftmaxActivation(Layer):
         #     #     softmax_dx_test[i][j] = batch_elem[j] * (np.sum(batch_elem) - batch_elem[j])
         #     softmax_dx[i] = batch_elem * (np.sum(batch_elem) - batch_elem)
 
-        softmax_dx = self._current_output * (np.sum(self._current_output, axis=1) - self._current_output)
+        softmax_dx = self._current_output * (np.sum(self._current_output, axis=1, keepdims=True) - self._current_output)
 
         return softmax_dx * dx
 

@@ -49,7 +49,9 @@ class LogisticActivation(Layer):
 
 class LeakyReluActivation(Layer):
     def __init__(self, num_neurons: int, alpha: float = 0.01) -> None:
-        assert 0 < alpha < 0.5, "alpha should be between 0 and 0.5"
+        if not 0 < alpha < 0.5:
+            raise ValueError("alpha must be in the range (0, 0.5)")
+
         super().__init__()
         self._num_neurons = num_neurons
         self._alpha = alpha
@@ -74,7 +76,9 @@ class LeakyReluActivation(Layer):
 
 class ParamReluActivation(Layer):
     def __init__(self, num_neurons: int, learning_rate: float, alpha: float = 0.01) -> None:
-        assert 0 < alpha < 0.5, "alpha should be between 0 and 0.5"
+        if not 0 < alpha < 0.5:
+            raise ValueError("alpha must be in the range (0, 0.5)")
+
         super().__init__()
         self._num_neurons = num_neurons
         self._learning_rate = learning_rate
@@ -105,11 +109,14 @@ class ParamReluActivation(Layer):
 
 class EluActivation(Layer):
     def __init__(self, num_neurons: int, alpha: float = 0.01) -> None:
-        assert 0 <= alpha, "alpha should be not less than 0"
+        if alpha > 0:
+            raise ValueError("alpha should be not less than 0")
+
         super().__init__()
         self._num_neurons = num_neurons
         self._alpha = alpha
 
+        # todo vectorize is actually a for loop inside
         self._feed_func = np.vectorize(lambda x: x if x > 0. else self._alpha * (np.e ** x - 1.))
         self._back_func = np.vectorize(lambda x: 1. if x > 0. else self._alpha * (np.e ** x))
 
@@ -122,6 +129,37 @@ class EluActivation(Layer):
     def back_propagate(self, dx: np.ndarray) -> np.ndarray:
         relu_dx = self._back_func(self._current_output)
         return relu_dx * dx
+
+    @property
+    def num_outputs(self):
+        return self._num_neurons
+
+
+class SoftmaxActivation(Layer):
+    def __init__(self, num_neurons: int) -> None:
+        super().__init__()
+        self._num_neurons = num_neurons
+
+        self._current_output: np.ndarray = None
+
+    def propagate(self, x: np.ndarray) -> np.ndarray:
+        exps = np.exp(x - np.max(x, axis=1, keepdims=True))
+        self._current_output = exps / np.sum(exps, axis=1, keepdims=True)
+        return self._current_output
+
+    def back_propagate(self, dx: np.ndarray) -> np.ndarray:
+        # just an example without matrix operations
+        # softmax_dx = np.empty(shape=dx.shape)
+        #
+        # for i in range(0, dx.shape[0]):
+        #     batch_elem = self._current_output[i]
+        #     # for j in range(0, batch_elem.shape[0]):
+        #     #     softmax_dx_test[i][j] = batch_elem[j] * (np.sum(batch_elem) - batch_elem[j])
+        #     softmax_dx[i] = batch_elem * (np.sum(batch_elem) - batch_elem)
+
+        softmax_dx = self._current_output * (np.sum(self._current_output, axis=1, keepdims=True) - self._current_output)
+
+        return softmax_dx * dx
 
     @property
     def num_outputs(self):

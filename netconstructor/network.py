@@ -3,8 +3,8 @@ from typing import List, Tuple
 
 import numpy as np
 
-from netconstructor.activation import ReluActivation, LogisticActivation, EluActivation
-from netconstructor.error import SquareError, Error
+from netconstructor.activation import ReluActivation, LogisticActivation, EluActivation, SoftmaxActivation
+from netconstructor.error import SquareError, Error, CrossEntropyError
 from netconstructor.layer import Layer, DenseLayer, BatchNorm
 
 
@@ -12,7 +12,7 @@ class NeuralNetwork:
 
     # todo: different types of learning rate: constant, decreasing, etc.
 
-    def __init__(self, num_inputs: int, learning_rate: float = 0.5) -> None:
+    def __init__(self, num_inputs: int, learning_rate: float = 0.2) -> None:
         self._num_inputs: int = num_inputs
         self._learning_rate = learning_rate
 
@@ -32,9 +32,9 @@ class NeuralNetwork:
 
             output_errors = self._error.propagate(output, y)
             error = self._reduce_error(output_errors)
-            logging.info(error)  # TODO: logging
+            logging.info(f"iteration: {i}, error: {error}")
 
-            output = self._error.back_propagate(output, y)
+            output = self._error.back_propagate(output, y)  # todo output_errors ?
 
             for layer in reversed(self._layers):
                 output = layer.back_propagate(output)
@@ -46,6 +46,10 @@ class NeuralNetwork:
 
     def with_square_error(self) -> "NeuralNetwork":
         self._error = SquareError()
+        return self
+
+    def with_cross_entropy_error(self) -> "NeuralNetwork":
+        self._error = CrossEntropyError()
         return self
 
     def with_dense_layer(self, num_outputs: int, initial_weights: np.ndarray = None, initial_biases: np.ndarray = None
@@ -85,6 +89,14 @@ class NeuralNetwork:
         latest_layer, num_inputs = self._load_net_characteristics()
 
         new_layer = LogisticActivation(num_inputs)
+
+        self._layers.append(new_layer)
+        return self
+
+    def with_softmax_activation(self) -> "NeuralNetwork":
+        latest_layer, num_inputs = self._load_net_characteristics()
+
+        new_layer = SoftmaxActivation(num_inputs)
 
         self._layers.append(new_layer)
         return self

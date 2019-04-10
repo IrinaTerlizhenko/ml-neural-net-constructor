@@ -1,11 +1,9 @@
-import logging
-
 import numpy as np
 import tensorflow as tf
 
 from netconstructor.network import NeuralNetwork
 
-logging.basicConfig(level=logging.INFO)
+# logging.basicConfig(level=logging.INFO)
 
 NUM_CLASSES = 10
 
@@ -32,16 +30,21 @@ test_labels = one_hot(mnist.test.labels)
 
 
 def test_mnist():
-    network = _build_batch_norm_after_activation_network()
+    network = _build_simplest_network()
 
     batch_size = 1
 
-    for i in range(0, 100):
-        network.train(train_images[i * batch_size: (i + 1) * batch_size],
-                      train_labels[i * batch_size: (i + 1) * batch_size], 1)
-    # network.train(train_images[:1], train_labels[:1], 100)
+    average_error = 0.0
+    for i in range(0, 10000):
+        error = network.train(train_images[i * batch_size: (i + 1) * batch_size],
+                              train_labels[i * batch_size: (i + 1) * batch_size], 1)
+        if i > 1000:
+            average_error += error
 
-    # todo: assert
+    average_error /= 9000
+
+    expected_error = 0.15
+    assert average_error < expected_error
 
 
 def test_mnist_on_zeros():
@@ -76,7 +79,8 @@ def test_mnist_on_zeros_in_batch():
     labels = np.array(labels)
 
     for i in range(0, int(len(train) / batch_size)):
-        error = network.train(train[i*batch_size: (i+1)*batch_size], labels[i*batch_size: (i+1)*batch_size], batch_size)
+        error = network.train(train[i * batch_size: (i + 1) * batch_size], labels[i * batch_size: (i + 1) * batch_size],
+                              batch_size)
 
     expected_error = 1e-5
     assert error < expected_error
@@ -87,4 +91,11 @@ def _build_batch_norm_after_activation_network() -> NeuralNetwork:
         .with_dense_layer(10) \
         .with_softmax_activation() \
         .with_batch_norm() \
+        .with_square_error()
+
+
+def _build_simplest_network() -> NeuralNetwork:
+    return NeuralNetwork(784, learning_rate=0.1) \
+        .with_dense_layer(10) \
+        .with_softmax_activation() \
         .with_square_error()

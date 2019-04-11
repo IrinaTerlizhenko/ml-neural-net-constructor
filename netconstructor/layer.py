@@ -114,12 +114,16 @@ class DropoutLayer(Layer):
     def __init__(self, num_inputs: int, dropout_rate: float) -> None:
         self._num_neurons = num_inputs
         self._dropout_rate = dropout_rate
+        self.no_drop = False		# Set True to use all neurons on test & validation
         self._current_inputs: np.ndarray = None
 
     def propagate(self, x: np.ndarray) -> np.ndarray:
         self._current_inputs = x.copy()
-        self._dropout_matrix = np.diag(np.random.choice(2, size=self._num_neurons, p=[self._dropout_rate, 1 - self._dropout_rate]))
-        return x.dot(self._dropout_matrix)
+    	if self.no_drop:
+    		return x.dot(self._dropout_rate)
+    	else:
+	        self._dropout_matrix = np.diag(np.random.choice(2, size=self._num_neurons, p=[self._dropout_rate, 1 - self._dropout_rate]))
+	        return x.dot(self._dropout_matrix)
 
     def back_propagate(self, dx: np.ndarray) -> np.ndarray:
         output_dx = dx.dot(self._dropout_matrix.T)

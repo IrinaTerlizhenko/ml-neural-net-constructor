@@ -109,3 +109,25 @@ class BatchNorm(Layer):
     @property
     def num_outputs(self):
         return self._num_outputs
+
+class DropoutLayer(Layer):
+    def __init__(self, num_inputs: int, dropout_rate: float) -> None:
+        self._num_inputs = num_inputs
+        self._dropout_rate = dropout_rate
+        self._current_inputs: np.ndarray = None
+
+    def propagate(self, x: np.ndarray) -> np.ndarray:
+        self._current_inputs = x.copy()
+        self._dropout_matrix = np.diag(np.random.randint(2, size=self._num_inputs))
+        return x.dot(self._dropout_matrix)
+
+    def back_propagate(self, dx: np.ndarray) -> np.ndarray:
+        output_dx = dx.dot(self._dropout_matrix.T)
+
+        logging.debug(f"dropout_matrix: {self._dropout_matrix}")
+
+        return output_dx
+
+    @property
+    def num_outputs(self):
+        return self._num_inputs

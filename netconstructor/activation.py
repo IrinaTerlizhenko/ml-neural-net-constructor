@@ -109,7 +109,7 @@ class ParamReluActivation(Layer):
 
 class EluActivation(Layer):
     def __init__(self, num_neurons: int, alpha: float = 0.01) -> None:
-        if alpha > 0:
+        if alpha < 0:
             raise ValueError("alpha should be not less than 0")
 
         super().__init__()

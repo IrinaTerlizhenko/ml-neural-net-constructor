@@ -1,5 +1,5 @@
 import logging
-from typing import List, Tuple
+from typing import List, Tuple, Union, Callable
 
 import numpy as np
 
@@ -41,6 +41,16 @@ class NeuralNetwork:
 
         return error
 
+    def test(self, x: np.ndarray) -> np.ndarray:
+
+        # reshape to at least two dimensional array
+        output = x.copy() if len(x.shape) > 1 else x.copy().reshape(1, len(x))
+
+        for layer in self._layers:
+            output = layer.test(output)
+
+        return output
+
     def _reduce_error(self, output_errors: np.ndarray) -> float:
         return output_errors.sum()  # AXIS=1 if we want to see separate error for each batch element
 
@@ -52,11 +62,26 @@ class NeuralNetwork:
         self._error = CrossEntropyError()
         return self
 
-    def with_dense_layer(self, num_outputs: int, initial_weights: np.ndarray = None, initial_biases: np.ndarray = None
+    def with_dense_layer(self, num_outputs: int, initial_weights: Union[np.ndarray, Callable] = None,
+                         initial_biases: Union[np.ndarray, Callable] = None
                          ) -> "NeuralNetwork":
         latest_layer, num_inputs = self._load_net_characteristics()
 
-        new_layer = DenseLayer(num_inputs, num_outputs, self._learning_rate, initial_weights, initial_biases)
+        if type(initial_weights) is Callable:
+            weights = np.fromfunction(initial_weights, (num_inputs, num_outputs))
+        elif type(initial_weights) is np.ndarray:
+            weights = initial_weights
+        else:
+            weights = None
+
+        if type(initial_biases) is Callable:
+            biases = np.fromfunction(initial_biases, (num_outputs,))
+        elif type(initial_biases) is np.ndarray:
+            biases = initial_biases
+        else:
+            biases = None
+
+        new_layer = DenseLayer(num_inputs, num_outputs, self._learning_rate, weights, biases)
 
         self._layers.append(new_layer)
         return self

@@ -1,4 +1,5 @@
 import numpy as np
+import pytest
 import tensorflow as tf
 
 from netconstructor.network import NeuralNetwork
@@ -26,7 +27,7 @@ validation_labels = one_hot(mnist.validation.labels)
 
 # test
 test_images = mnist.test.images
-test_labels = one_hot(mnist.test.labels)
+test_labels = mnist.test.labels
 
 
 def test_mnist():
@@ -42,6 +43,27 @@ def test_mnist():
             average_error += error
 
     average_error /= 9000
+
+    expected_error = 0.15
+    assert average_error < expected_error
+
+
+@pytest.mark.parametrize("batch_size", [25, 50, 100, 250, 500, ])
+def test_mnist_on_batch(batch_size):
+    network = _build_simplest_network()
+
+    num_iterations = len(train_images) // batch_size
+
+    average_error = 0.0
+    for i in range(0, num_iterations):
+        error = network.train(train_images[i * batch_size: (i + 1) * batch_size],
+                              train_labels[i * batch_size: (i + 1) * batch_size], 1)
+        if i > num_iterations - 11:
+            average_error += error
+
+    average_error /= 10 * batch_size
+
+    print(average_error)
 
     expected_error = 0.15
     assert average_error < expected_error
@@ -86,6 +108,64 @@ def test_mnist_on_zeros_in_batch():
     assert error < expected_error
 
 
+def test_mnist_not_train():
+    network = _build_simplest_network()
+
+    batch_size = 1
+
+    for i in range(0, 10000):
+        network.train(train_images[i * batch_size: (i + 1) * batch_size],
+                      train_labels[i * batch_size: (i + 1) * batch_size], 1)
+
+    accuracy = 0
+    for i in range(0, len(test_images)):
+        result = network.test(test_images[i])
+        label = np.argmax(result, axis=1)
+        accuracy += np.sum(label == test_labels[i])
+
+    accuracy /= len(test_images)
+
+    assert accuracy > 0.83
+
+
+@pytest.mark.parametrize("batch_size", [25, 50, 100, 250, ])
+def test_mnist_on_batch_not_train(batch_size):
+    network = _build_simplest_network()
+
+    num_iterations = len(train_images) // batch_size
+
+    for i in range(0, num_iterations):
+        network.train(train_images[i * batch_size: (i + 1) * batch_size],
+                      train_labels[i * batch_size: (i + 1) * batch_size], 1)
+
+    accuracy = 0
+    for i in range(0, len(test_images)):
+        result = network.test(test_images[i])
+        label = np.argmax(result, axis=1)
+        accuracy += np.sum(label == test_labels[i])
+
+    accuracy /= len(test_images)
+
+    assert accuracy > 0.83
+
+
+@pytest.mark.parametrize("batch_size", [25, 50, 100, 250, ])
+def test_mnist_on_batch_not_train(batch_size):
+    network = _build_simplest_network()
+
+    num_iterations = len(train_images) // batch_size
+
+    for i in range(0, num_iterations):
+        network.train(train_images[i * batch_size: (i + 1) * batch_size],
+                      train_labels[i * batch_size: (i + 1) * batch_size], 1)
+
+    result = network.test(test_images[:1000])
+    label = np.argmax(result, axis=1)
+    accuracy = np.sum(label == test_labels[:1000]) / 1000
+
+    assert accuracy > 0.83
+
+
 def _build_batch_norm_after_activation_network() -> NeuralNetwork:
     return NeuralNetwork(784, learning_rate=0.1) \
         .with_dense_layer(10) \
@@ -96,6 +176,6 @@ def _build_batch_norm_after_activation_network() -> NeuralNetwork:
 
 def _build_simplest_network() -> NeuralNetwork:
     return NeuralNetwork(784, learning_rate=0.1) \
-        .with_dense_layer(10) \
+        .with_dense_layer(10, initial_weights=lambda: 0., initial_biases=lambda: 0.) \
         .with_softmax_activation() \
         .with_square_error()

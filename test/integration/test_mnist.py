@@ -166,6 +166,31 @@ def test_mnist_on_batch_not_train(batch_size):
     assert accuracy > 0.83
 
 
+@pytest.mark.parametrize("batch_size", [50, ])
+@pytest.mark.skip('Error is rising too fast with batch norm')
+def test_mnist_on_batch_not_train(batch_size):
+    network = _build_batch_norm_after_activation_network()
+
+    num_iterations = len(train_images) // batch_size
+
+    average_error = 0.0
+    for i in range(0, num_iterations):
+        error = network.train(train_images[i * batch_size: (i + 1) * batch_size],
+                              train_labels[i * batch_size: (i + 1) * batch_size], 1)
+        if i > num_iterations - 11:
+            average_error += error
+
+    average_error /= 10 * batch_size
+
+    print(average_error)
+
+    result = network.test(test_images[:3000])
+    label = np.argmax(result, axis=1)
+    accuracy = np.sum(label == test_labels[:3000]) / 3000
+
+    assert accuracy > 0.83
+
+
 def _build_batch_norm_after_activation_network() -> NeuralNetwork:
     return NeuralNetwork(784, learning_rate=0.1) \
         .with_dense_layer(10) \

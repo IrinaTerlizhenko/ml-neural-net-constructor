@@ -6,9 +6,13 @@ import math
 
 
 class Layer(ABC):
+
     @abstractmethod
     def propagate(self, x: np.ndarray) -> np.ndarray:
         pass
+
+    def test(self, x: np.ndarray):
+        return self.propagate(x)
 
     @abstractmethod
     def back_propagate(self, dx: np.ndarray) -> np.ndarray:
@@ -21,6 +25,7 @@ class Layer(ABC):
 
 
 class DenseLayer(Layer):
+
     def __init__(self, num_inputs: int, num_outputs: int, learning_rate: float, initial_weights: np.ndarray = None,
                  initial_biases: np.ndarray = None) -> None:
         self._num_inputs = num_inputs
@@ -66,7 +71,7 @@ class BatchNorm(Layer):
     EPSILON = 0.001
 
     def __init__(self, num_outputs: int, learning_rate: float, gamma: float = 1,
-                 beta: float = 0) -> None:  # TODO: IS_TRAIN (MOVING MEAN AND AVG)
+                 beta: float = 0) -> None:
         self._num_outputs = num_outputs
 
         self._learning_rate = learning_rate
@@ -74,35 +79,52 @@ class BatchNorm(Layer):
         self._gamma = gamma
         self._beta = beta
 
+        self._current_iteration = 1
+        self._moving_beta = self._beta
+        self._moving_gamma = self._gamma
+
         self._current_inputs: np.ndarray = None
 
-    def propagate(self, x: np.ndarray) -> np.ndarray:
+    def propagate(self, x: np.ndarray, is_train: bool = True) -> np.ndarray:
         self._current_inputs = x.copy()
 
-        batch_size = x.shape[0]
-        mu = 1 / batch_size * np.sum(x, axis=0)
-        sigma2 = 1 / batch_size * np.sum((x - mu) ** 2, axis=0)
-        hath = (x - mu) * (sigma2 + BatchNorm.EPSILON) ** (-1. / 2.)
+        mu = np.mean(x, axis=0)
+        sigma2 = np.var(x, axis=0)
+        # Normalized x value
+        hath = (x - mu) * (sigma2 + BatchNorm.EPSILON) ** (-0.5)
 
-        return self._gamma * hath + self._beta
+        if is_train:
+            return self._gamma * hath + self._beta
+        else:
+            return self._moving_gamma * hath + self._moving_beta
+
+    def test(self, x: np.ndarray):
+        return self.propagate(x, False)
 
     def back_propagate(self, dx: np.ndarray) -> np.ndarray:
         x = self._current_inputs
         batch_size = x.shape[0]
-        mu = 1. / batch_size * np.sum(x, axis=0)
-        var = 1. / batch_size * np.sum((x - mu) ** 2, axis=0)
+        mu = np.mean(x, axis=0)
+        var = np.var(x, axis=0)
         dbeta = np.sum(dx, axis=0)
-        dgamma = np.sum((x - mu) * (var + BatchNorm.EPSILON) ** (-1. / 2.) * dx, axis=0)
-        output_dx = (1. / batch_size) * self._gamma * (var + BatchNorm.EPSILON) ** (-1. / 2.) \
+        dgamma = np.sum((x - mu) * (var + BatchNorm.EPSILON) ** (-0.5) * dx, axis=0)
+        # TODO: CHECK CORRECTNESS
+        output_dx = (1. / batch_size) * self._gamma * (var + BatchNorm.EPSILON) ** (-0.5) \
                     * (
-                        batch_size * dx - np.sum(dx, axis=0)
-                        - (x - mu)
-                        * (var + BatchNorm.EPSILON) ** (-1.0)
-                        * np.sum(dx * (x - mu), axis=0)
+                            batch_size * dx - np.sum(dx, axis=0)
+                            - (x - mu)
+                            * (var + BatchNorm.EPSILON) ** (-1.0)
+                            * np.sum(dx * (x - mu), axis=0)
                     )
 
-        self._beta -= self._learning_rate * dbeta  # TODO: SHOULD WE TAKE AVG OR UPDATE EVERY ELEMENT?
+        self._beta -= self._learning_rate * dbeta
         self._gamma -= self._learning_rate * dgamma
+
+        self._moving_beta = ((self._moving_beta * self._current_iteration) + self._beta) / (
+                self._current_iteration + 1)
+        self._moving_gamma = ((self._moving_gamma * self._current_iteration) + self._gamma) / (
+                self._current_iteration + 1)
+        self._current_iteration += 1
 
         return output_dx
 

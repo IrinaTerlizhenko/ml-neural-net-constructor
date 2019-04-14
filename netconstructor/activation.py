@@ -4,6 +4,7 @@ from netconstructor.layer import Layer
 
 
 class ReluActivation(Layer):
+
     def __init__(self, num_neurons: int) -> None:
         super().__init__()
         self._num_neurons = num_neurons
@@ -48,6 +49,7 @@ class LogisticActivation(Layer):
 
 
 class LeakyReluActivation(Layer):
+
     def __init__(self, num_neurons: int, alpha: float = 0.01) -> None:
         if not 0 < alpha < 0.5:
             raise ValueError("alpha must be in the range (0, 0.5)")
@@ -75,6 +77,7 @@ class LeakyReluActivation(Layer):
 
 
 class ParamReluActivation(Layer):
+
     def __init__(self, num_neurons: int, learning_rate: float, alpha: float = 0.01) -> None:
         if not 0 < alpha < 0.5:
             raise ValueError("alpha must be in the range (0, 0.5)")
@@ -108,6 +111,7 @@ class ParamReluActivation(Layer):
 
 
 class EluActivation(Layer):
+
     def __init__(self, num_neurons: int, alpha: float = 0.01) -> None:
         if alpha < 0:
             raise ValueError("alpha should be not less than 0")
@@ -136,6 +140,7 @@ class EluActivation(Layer):
 
 
 class SoftmaxActivation(Layer):
+
     def __init__(self, num_neurons: int) -> None:
         super().__init__()
         self._num_neurons = num_neurons

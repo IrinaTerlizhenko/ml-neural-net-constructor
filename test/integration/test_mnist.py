@@ -191,6 +191,28 @@ def test_mnist_on_batch_not_train(batch_size):
     assert accuracy > 0.83
 
 
+@pytest.mark.skip(reason="This test runs 1+ minutes, enable it manually if you need")
+def test_mnist_deep():
+    network = _build_deep_network()
+
+    batch_size = 50
+    num_iterations = 100
+    num_last_errors = 10
+
+    average_error = 0.0
+    for i in range(0, num_iterations):
+        error = network.train(train_images[i * batch_size: (i + 1) * batch_size],
+                              train_labels[i * batch_size: (i + 1) * batch_size], 1)
+        if i >= num_iterations - num_last_errors:
+            average_error += error
+
+    average_error /= num_last_errors * batch_size
+    print(average_error)
+
+    expected_error = 0.5
+    assert average_error < expected_error
+
+
 def _build_batch_norm_after_activation_network() -> NeuralNetwork:
     return NeuralNetwork(784, learning_rate=0.1) \
         .with_dense_layer(10) \
@@ -202,5 +224,14 @@ def _build_batch_norm_after_activation_network() -> NeuralNetwork:
 def _build_simplest_network() -> NeuralNetwork:
     return NeuralNetwork(784, learning_rate=0.1) \
         .with_dense_layer(10, initial_weights=lambda: 0., initial_biases=lambda: 0.) \
+        .with_softmax_activation() \
+        .with_square_error()
+
+
+def _build_deep_network() -> NeuralNetwork:
+    return NeuralNetwork(784, learning_rate=0.1) \
+        .with_dense_layer(784) \
+        .with_softmax_activation() \
+        .with_dense_layer(10) \
         .with_softmax_activation() \
         .with_square_error()

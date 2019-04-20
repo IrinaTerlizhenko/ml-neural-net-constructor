@@ -1,5 +1,6 @@
 import logging
 from abc import ABC, abstractmethod
+from typing import Tuple, Callable
 
 import numpy as np
 import math
@@ -18,31 +19,42 @@ class Layer(ABC):
     def back_propagate(self, dx: np.ndarray) -> np.ndarray:
         pass
 
-    @property
-    @abstractmethod
-    def num_outputs(self):
-        pass
-
 
 class DenseLayer(Layer):
 
-    def __init__(self, num_inputs: int, num_outputs: int, learning_rate: float, initial_weights: np.ndarray = None,
-                 initial_biases: np.ndarray = None) -> None:
-        self._num_inputs = num_inputs
+    def __init__(self, num_outputs: int, learning_rate: float, initial_weights: np.ndarray = None,
+                 initial_biases: np.ndarray = None, weights_initializer: Callable = None,
+                 bias_initializer: Callable = None) -> None:
         self._num_outputs = num_outputs
         self._learning_rate = learning_rate
 
-        self._weight = initial_weights if initial_weights is not None \
-            else np.random.uniform(-1. / math.sqrt(num_inputs), 1. / math.sqrt(num_inputs), num_inputs * num_outputs) \
-            .reshape(num_inputs, num_outputs)
+        self._weight_initializer = weights_initializer
+        self._bias_initializer = bias_initializer
+
+        self._weight = initial_weights
         # todo: to separate layer
-        self._bias = initial_biases if initial_biases is not None \
-            else np.zeros(shape=(1, num_outputs))
+        self._bias = initial_biases
 
         self._current_inputs: np.ndarray = None
 
     def propagate(self, x: np.ndarray) -> np.ndarray:
         self._current_inputs = x.copy()
+
+        num_inputs = x.shape[1]
+        num_outputs = self._num_outputs
+
+        if self._weight is None:
+            if self._weight_initializer:
+                self._weight = np.fromfunction(self._weight_initializer, (num_inputs, num_outputs))
+            else:
+                self._weight = np.random.uniform(-1. / math.sqrt(num_inputs), 1. / math.sqrt(num_inputs),
+                                                 num_inputs * num_outputs).reshape(num_inputs, num_outputs)
+        if self._bias is None:
+            if self._bias_initializer:
+                self._bias = np.fromfunction(self._bias_initializer, (num_outputs,))
+            else:
+                self._bias = np.zeros(shape=(1, num_outputs))
+
         return x.dot(self._weight) + self._bias
 
     def back_propagate(self, dx: np.ndarray) -> np.ndarray:
@@ -63,17 +75,12 @@ class DenseLayer(Layer):
 
         return output_dx
 
-    @property
-    def num_outputs(self):
-        return self._num_outputs
-
 
 class BatchNorm(Layer):
     EPSILON = 0.001
 
-    def __init__(self, num_outputs: int, learning_rate: float, gamma: float = 1,
+    def __init__(self, learning_rate: float, gamma: float = 1,
                  beta: float = 0) -> None:
-        self._num_outputs = num_outputs
 
         self._learning_rate = learning_rate
 
@@ -129,6 +136,16 @@ class BatchNorm(Layer):
 
         return output_dx
 
-    @property
-    def num_outputs(self):
-        return self._num_outputs
+
+class ReshapeLayer(Layer):
+
+    def __init__(self, new_shape: Tuple) -> None:
+        self._new_shape = new_shape
+        self._current_shape = None
+
+    def propagate(self, x: np.ndarray) -> np.ndarray:
+        self._current_shape = x.shape
+        return x.reshape((x.shape[0],) + self._new_shape)
+
+    def back_propagate(self, dx: np.ndarray) -> np.ndarray:
+        return dx.reshape(self._current_shape)

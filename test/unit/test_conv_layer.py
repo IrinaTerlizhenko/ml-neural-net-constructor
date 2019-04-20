@@ -22,3 +22,39 @@ def test_smoke():
 
     summed_data = np.sum(data, axis=3)
     assert np.allclose(output, summed_data.reshape(summed_data.shape + (1,)))
+
+
+def test_back_propagation():
+    filters = np.array([
+        [
+            [0., 0., 0.],
+            [0., 1., 0.],
+            [0., 0., 0.],
+        ],
+    ])
+
+    dx = np.array(
+        [
+            [1., 0., 0., 0.],
+            [0., 0., 0., 0.],
+            [0., 0., 0., 0.],
+            [0., 0., 0., 0.],
+        ],
+    )
+    dx = dx.reshape((1, 4, 4, 1))
+
+    data = np.array(
+        [
+            [0., 0., 0., 0.],
+            [0., 1., 0., 0.],
+            [0., 0., 0., 0.],
+            [0., 0., 0., 0.],
+        ],
+    )
+    data = data.reshape((1, 4, 4, 1))
+
+    layer = ConvolutionLayer(1, 1, 1.0, filters)
+
+    layer.propagate(data)
+
+    layer.back_propagate(dx)

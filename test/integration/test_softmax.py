@@ -50,7 +50,7 @@ def test_article_softmax():
 
 
 def _build_softmax_network() -> NeuralNetwork:
-    return NeuralNetwork(4) \
+    return NeuralNetwork() \
         .with_dense_layer(4) \
         .with_softmax_activation() \
         .with_batch_norm() \
@@ -61,7 +61,7 @@ def _build_softmax_network() -> NeuralNetwork:
 
 
 def _build_article_softmax_network() -> NeuralNetwork:
-    return NeuralNetwork(2) \
+    return NeuralNetwork() \
         .with_dense_layer(2, w1, b1) \
         .with_softmax_activation() \
         .with_batch_norm() \

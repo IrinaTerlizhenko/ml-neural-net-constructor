@@ -8,6 +8,7 @@ def load_from_csv(file, delimiter=','):
     return np.genfromtxt(file, dtype=np.float, delimiter=delimiter)
 
 
+# todo: read labels
 def load_from_img(file, rec: bool = False):
     if os.path.isfile(file):
         return np.array([imread(file), ])

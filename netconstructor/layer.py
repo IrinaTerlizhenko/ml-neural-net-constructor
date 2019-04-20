@@ -35,6 +35,7 @@ class DenseLayer(Layer):
         self._weight = initial_weights if initial_weights is not None \
             else np.random.uniform(-1. / math.sqrt(num_inputs), 1. / math.sqrt(num_inputs), num_inputs * num_outputs) \
             .reshape(num_inputs, num_outputs)
+        # todo: to separate layer
         self._bias = initial_biases if initial_biases is not None \
             else np.zeros(shape=(1, num_outputs))
 

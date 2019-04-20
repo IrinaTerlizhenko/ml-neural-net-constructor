@@ -1,16 +1,14 @@
 import logging
-from typing import List, Tuple, Union, Callable
+from typing import List, Tuple
 
 import numpy as np
 
 from netconstructor.activation import ReluActivation, LogisticActivation, EluActivation, SoftmaxActivation
 from netconstructor.error import SquareError, Error, CrossEntropyError
-from netconstructor.layer import Layer, DenseLayer, BatchNorm
+from netconstructor.layer import Layer
 
 
-class NeuralNetwork:
-
-    # todo: different types of learning rate: constant, decreasing, etc.
+class ConvolutionNeuralNetwork:
 
     def __init__(self, num_inputs: int, learning_rate: float = 0.2) -> None:
         self._num_inputs: int = num_inputs
@@ -23,11 +21,17 @@ class NeuralNetwork:
         if num_iterations <= 0:
             raise ValueError("Number of iterations must be a positive integer number")
 
-        if len(x.shape) > 2:
-            raise ValueError("The input must be a 1- or 2-dimensional array.")
+        if len(x.shape) < 2:
+            raise ValueError("The input must be at least a 2-dimensional array (for one grayscale image).")
 
-        # reshape to at least two dimensional array
-        output = x.copy() if len(x.shape) > 1 else x.copy().reshape(1, len(x))
+        if len(x.shape) > 4:
+            raise ValueError("The input must be at most a 4-dimensional array (for multiple RGB images).")
+
+        # reshape to at least 3-dimensional array for batch processing
+        output = x.copy() if len(x.shape) > 2 else x.copy().reshape((1,) + x.shape)
+        # reshape to 4-dimensional array for multiple channels
+        if len(output.shape) == 3:
+            output = output.reshape(output.shape + (1,))
 
         for i in range(0, num_iterations):
             for layer in self._layers:
@@ -45,16 +49,7 @@ class NeuralNetwork:
         return error
 
     def test(self, x: np.ndarray) -> np.ndarray:
-        if len(x.shape) > 2:
-            raise ValueError("The input must be a 1- or 2-dimensional array.")
-
-        # reshape to at least two dimensional array
-        output = x.copy() if len(x.shape) > 1 else x.copy().reshape(1, len(x))
-
-        for layer in self._layers:
-            output = layer.test(output)
-
-        return output
+        pass
 
     def _reduce_error(self, output_errors: np.ndarray) -> float:
         return output_errors.sum()  # AXIS=1 if we want to see separate error for each batch element
@@ -65,38 +60,6 @@ class NeuralNetwork:
 
     def with_cross_entropy_error(self) -> "NeuralNetwork":
         self._error = CrossEntropyError()
-        return self
-
-    def with_dense_layer(self, num_outputs: int, initial_weights: Union[np.ndarray, Callable] = None,
-                         initial_biases: Union[np.ndarray, Callable] = None
-                         ) -> "NeuralNetwork":
-        latest_layer, num_inputs = self._load_net_characteristics()
-
-        if type(initial_weights) is Callable:
-            weights = np.fromfunction(initial_weights, (num_inputs, num_outputs))
-        elif type(initial_weights) is np.ndarray:
-            weights = initial_weights
-        else:
-            weights = None
-
-        if type(initial_biases) is Callable:
-            biases = np.fromfunction(initial_biases, (num_outputs,))
-        elif type(initial_biases) is np.ndarray:
-            biases = initial_biases
-        else:
-            biases = None
-
-        new_layer = DenseLayer(num_inputs, num_outputs, self._learning_rate, weights, biases)
-
-        self._layers.append(new_layer)
-        return self
-
-    def with_batch_norm(self, gamma: float = 1, beta: float = 0) -> "NeuralNetwork":
-        latest_layer, num_inputs = self._load_net_characteristics()
-
-        new_layer = BatchNorm(num_inputs, self._learning_rate, gamma, beta)
-
-        self._layers.append(new_layer)
         return self
 
     def with_relu_activation(self) -> "NeuralNetwork":

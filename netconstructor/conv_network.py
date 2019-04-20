@@ -54,15 +54,15 @@ class ConvolutionNeuralNetwork:
     def _reduce_error(self, output_errors: np.ndarray) -> float:
         return output_errors.sum()  # AXIS=1 if we want to see separate error for each batch element
 
-    def with_square_error(self) -> "NeuralNetwork":
+    def with_square_error(self) -> "ConvolutionNeuralNetwork":
         self._error = SquareError()
         return self
 
-    def with_cross_entropy_error(self) -> "NeuralNetwork":
+    def with_cross_entropy_error(self) -> "ConvolutionNeuralNetwork":
         self._error = CrossEntropyError()
         return self
 
-    def with_relu_activation(self) -> "NeuralNetwork":
+    def with_relu_activation(self) -> "ConvolutionNeuralNetwork":
         latest_layer, num_inputs = self._load_net_characteristics()
 
         new_layer = ReluActivation(num_inputs)
@@ -70,7 +70,7 @@ class ConvolutionNeuralNetwork:
         self._layers.append(new_layer)
         return self
 
-    def with_elu_activation(self) -> "NeuralNetwork":
+    def with_elu_activation(self) -> "ConvolutionNeuralNetwork":
         latest_layer, num_inputs = self._load_net_characteristics()
 
         new_layer = EluActivation(num_inputs)
@@ -78,7 +78,7 @@ class ConvolutionNeuralNetwork:
         self._layers.append(new_layer)
         return self
 
-    def with_logistic_activation(self) -> "NeuralNetwork":
+    def with_logistic_activation(self) -> "ConvolutionNeuralNetwork":
         latest_layer, num_inputs = self._load_net_characteristics()
 
         new_layer = LogisticActivation(num_inputs)
@@ -86,7 +86,7 @@ class ConvolutionNeuralNetwork:
         self._layers.append(new_layer)
         return self
 
-    def with_softmax_activation(self) -> "NeuralNetwork":
+    def with_softmax_activation(self) -> "ConvolutionNeuralNetwork":
         latest_layer, num_inputs = self._load_net_characteristics()
 
         new_layer = SoftmaxActivation(num_inputs)

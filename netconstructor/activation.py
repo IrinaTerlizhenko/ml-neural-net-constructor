@@ -8,14 +8,14 @@ class ReluActivation(Layer):
     def __init__(self) -> None:
         super().__init__()
 
-        self._current_output: np.ndarray = None
+        self._current_input: np.ndarray = None
 
     def propagate(self, x: np.ndarray) -> np.ndarray:
-        self._current_output = x.copy()
+        self._current_input = x
         return np.maximum(x, 0)
 
     def back_propagate(self, dx: np.ndarray) -> np.ndarray:
-        relu_dx = self._current_output > 0  # ones when dx > 0 and zeros otherwise
+        relu_dx = self._current_input > 0  # ones when dx > 0 and zeros otherwise
         return relu_dx * dx  # component-wise
 
 
@@ -81,7 +81,7 @@ class ParamReluActivation(Layer):
         self._current_output: np.ndarray = None
 
     def propagate(self, x: np.ndarray) -> np.ndarray:
-        self._current_input = x.copy()
+        self._current_input = x
         self._current_output = self._feed_func(x)
         return self._current_output
 
@@ -101,18 +101,17 @@ class EluActivation(Layer):
         super().__init__()
         self._alpha = alpha
 
-        # todo vectorize is actually a for loop inside
-        self._feed_func = np.vectorize(lambda x: x if x > 0. else self._alpha * (np.e ** x - 1.))
-        self._back_func = np.vectorize(lambda x: 1. if x > 0. else self._alpha * (np.e ** x))
-
         self._current_output: np.ndarray = None
 
     def propagate(self, x: np.ndarray) -> np.ndarray:
-        self._current_output = self._feed_func(x)
+        x[x <= 0] = self._alpha * (np.e ** x[x <= 0] - 1.)
+        self._current_output = x
         return self._current_output
 
     def back_propagate(self, dx: np.ndarray) -> np.ndarray:
-        relu_dx = self._back_func(self._current_output)
+        relu_dx = self._current_output
+        relu_dx[relu_dx > 0] = 1.
+        relu_dx[relu_dx <= 0] = self._alpha * (np.e ** relu_dx[relu_dx <= 0.])
         return relu_dx * dx
 
 

@@ -11,21 +11,24 @@ class ConvolutionLayer(Layer):
         self._stride = stride
         self._learning_rate = learning_rate
 
-        # todo: only odd square kernel size
-        # todo: only kernels of same size
+        if initial_weights.shape[1] != initial_weights.shape[2]:
+            raise ValueError("Filters must have square shape.")
+        if initial_weights.shape[1] % 2 == 0:
+            raise ValueError("Filters must have odd kernel size.")
+
         self._filters = initial_weights
 
         self._current_inputs: np.ndarray = None
 
     def propagate(self, data: np.ndarray) -> np.ndarray:
-        self._current_inputs = data.copy()
+        self._current_inputs = data
 
         pad = self._padding
         stride = self._stride
         kernel_size = self._filters.shape[1]
 
-        output_x_dim = (data.shape[1] + pad * 2 - (kernel_size - 1)) // stride
-        output_y_dim = (data.shape[2] + pad * 2 - (kernel_size - 1)) // stride
+        output_x_dim = (data.shape[1] + pad * 2 + (stride - kernel_size)) // stride
+        output_y_dim = (data.shape[2] + pad * 2 + (stride - kernel_size)) // stride
         output = np.zeros(shape=(data.shape[0], output_x_dim, output_y_dim, len(self._filters)))
 
         # don't want to pad by batch and depth dimension

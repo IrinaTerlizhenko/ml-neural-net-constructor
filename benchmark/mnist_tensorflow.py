@@ -1,4 +1,3 @@
-import sys
 import time
 
 import numpy as np
@@ -48,8 +47,6 @@ test_labels = build_labels(test_labels)
 # const
 num_features = len(train_images[0])
 num_trainings = len(train_images)
-num_validations = len(validation_images)
-num_tests = len(test_images)
 
 # data
 with tf.name_scope('data'):
@@ -74,51 +71,40 @@ with tf.name_scope('params'):
 with tf.name_scope('loss_function'):
     with tf.name_scope('soft_max'):
         soft_max = tf.nn.softmax(tf.matmul(x, W) + b)
-    with tf.name_scope('cross_entropy'):
-        cross_entropy = tf.reduce_mean(-tf.reduce_sum(y * tf.log(soft_max), reduction_indices=1))
+    with tf.name_scope('error'):
+        square_error = tf.losses.mean_squared_error(y, soft_max)
     with tf.name_scope('accuracy'):
         correct_prediction = tf.equal(tf.argmax(soft_max, 1), tf.argmax(y, 1))
         accuracy = tf.reduce_mean(tf.cast(correct_prediction, tf.float32))
 
 # optimization
 with tf.name_scope('optimization'):
-    optimizer = tf.train.GradientDescentOptimizer(learn_rate).minimize(cross_entropy)
+    optimizer = tf.train.GradientDescentOptimizer(learn_rate).minimize(square_error)
 
 # init
 init = tf.global_variables_initializer()
-
-# summary
-tf.summary.scalar('cross_entropy', cross_entropy)
-tf.summary.scalar('accuracy', accuracy)
-merged_summary = tf.summary.merge_all()
 
 
 # run one round with specific parameters
 def run_round(session, batch_size=100, learning_rate=0.01, num_epochs=20):
     session.run(init)
-    global_step = 0
-    for epoch in range(num_epochs):
-        avg_cost = 0.
+    for _ in range(num_epochs):
         total_batch = int(num_trainings / batch_size)
 
         for i in range(total_batch):
             batch_xs = train_images[i * batch_size:(i + 1) * batch_size]
             batch_ys = train_labels[i * batch_size:(i + 1) * batch_size]
 
-            _, _, c = sess.run([merged_summary, optimizer, cross_entropy],
-                               feed_dict={x: batch_xs,
-                                          y: batch_ys,
-                                          learn_rate: learning_rate})
-            global_step += 1
+            sess.run(optimizer,
+                     feed_dict={x: batch_xs,
+                                y: batch_ys,
+                                learn_rate: learning_rate})
 
-            avg_cost += c / total_batch
 
-        print("Epoch:", '%04d' % (epoch + 1), ", cost:", "{:.9f}".format(avg_cost), file=sys.stderr)  # todo remove
-    print("Optimization Finished!", file=sys.stderr)
+def validate(batch_size=100, learning_rate=0.01, num_epochs=20):
     validation_accuracy = accuracy.eval({x: validation_images, y: validation_labels})
     w_const = W.eval()
     b_const = b.eval()
-    print(f"Validation_Accuracy_{batch_size}_{learning_rate}_{num_epochs}: {validation_accuracy}", file=sys.stderr)
 
     solution = {"validation_accuracy": validation_accuracy, "batch_size": batch_size,
                 "learning_rate": learning_rate,
@@ -127,16 +113,27 @@ def run_round(session, batch_size=100, learning_rate=0.01, num_epochs=20):
     return solution
 
 
-start = time.time()
+average = 0
+for _ in range(5):
+    with tf.Session() as sess:
+        batch = 30
+        rate = 0.05
+        epochs = 30
 
-with tf.Session() as sess:
-    batch = 30
-    rate = 0.05
-    epochs = 30
-    sol = run_round(sess, batch, rate, epochs)
+        start = time.time()
+        run_round(sess, batch, rate, epochs)
+        end = time.time()
+        print("_______________________________________________________")
+        overall = end - start
+        print(overall)
+        print("_______________________________________________________")
+        average += overall
 
-end = time.time()
-print(end - start)
+        sol = validate(batch, rate, epochs)
+average /= 5
+print("_______________________________________________________")
+print("Average:", average)
+print("_______________________________________________________")
 
 with tf.Session() as sess:
     sess.run(W.assign(sol["W"]))
@@ -150,7 +147,3 @@ print(
 
 print(
     f'Test Accuracy on Best algorithm = {test_accuracy}')
-
-# Run time 40 minutes
-# Best Accuracy on Validation = 0.9333999752998352: batch_size=30, learn_rate=0.05, num_epochs=30
-# Test Accuracy on Best algorithm = 0.9277999997138977

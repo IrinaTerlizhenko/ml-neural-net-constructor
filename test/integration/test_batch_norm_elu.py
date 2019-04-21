@@ -82,7 +82,7 @@ def test_batch_norm_after_activation_multiple_iterations():
 
 
 def _build_elu_network() -> NeuralNetwork:
-    return NeuralNetwork(2) \
+    return NeuralNetwork() \
         .with_dense_layer(2, w1, b1) \
         .with_elu_activation() \
         .with_dense_layer(2, w2, b2) \
@@ -91,7 +91,7 @@ def _build_elu_network() -> NeuralNetwork:
 
 
 def _build_batch_norm_network() -> NeuralNetwork:
-    return NeuralNetwork(2) \
+    return NeuralNetwork() \
         .with_dense_layer(2, w1, b1) \
         .with_batch_norm() \
         .with_logistic_activation() \
@@ -102,7 +102,7 @@ def _build_batch_norm_network() -> NeuralNetwork:
 
 
 def _build_batch_norm_after_activation_network() -> NeuralNetwork:
-    return NeuralNetwork(2) \
+    return NeuralNetwork() \
         .with_dense_layer(2, w1, b1) \
         .with_logistic_activation() \
         .with_batch_norm() \

@@ -5,15 +5,14 @@ import numpy as np
 
 from netconstructor.activation import ReluActivation, LogisticActivation, EluActivation, SoftmaxActivation
 from netconstructor.error import SquareError, Error, CrossEntropyError
-from netconstructor.layer import Layer, DenseLayer, BatchNorm
+from netconstructor.layer import Layer, DenseLayer, BatchNorm, ReshapeLayer
 
 
 class NeuralNetwork:
 
     # todo: different types of learning rate: constant, decreasing, etc.
 
-    def __init__(self, num_inputs: int, learning_rate: float = 0.2) -> None:
-        self._num_inputs: int = num_inputs
+    def __init__(self, learning_rate: float = 0.2) -> None:
         self._learning_rate = learning_rate
 
         self._layers: List[Layer] = []
@@ -70,68 +69,65 @@ class NeuralNetwork:
     def with_dense_layer(self, num_outputs: int, initial_weights: Union[np.ndarray, Callable] = None,
                          initial_biases: Union[np.ndarray, Callable] = None
                          ) -> "NeuralNetwork":
-        latest_layer, num_inputs = self._load_net_characteristics()
 
+        weight = None
+        weight_initializer = None
         if type(initial_weights) is Callable:
-            weights = np.fromfunction(initial_weights, (num_inputs, num_outputs))
+            weight_initializer = initial_weights
         elif type(initial_weights) is np.ndarray:
-            weights = initial_weights
-        else:
-            weights = None
+            weight = initial_weights
 
+        bias = None
+        bias_initializer = None
         if type(initial_biases) is Callable:
-            biases = np.fromfunction(initial_biases, (num_outputs,))
+            bias_initializer = initial_biases
         elif type(initial_biases) is np.ndarray:
-            biases = initial_biases
-        else:
-            biases = None
+            bias = initial_biases
 
-        new_layer = DenseLayer(num_inputs, num_outputs, self._learning_rate, weights, biases)
+        new_layer = DenseLayer(num_outputs, self._learning_rate, initial_weights=weight, initial_biases=bias,
+                               weights_initializer=weight_initializer, bias_initializer=bias_initializer)
 
         self._layers.append(new_layer)
         return self
 
     def with_batch_norm(self, gamma: float = 1, beta: float = 0) -> "NeuralNetwork":
-        latest_layer, num_inputs = self._load_net_characteristics()
 
-        new_layer = BatchNorm(num_inputs, self._learning_rate, gamma, beta)
+        new_layer = BatchNorm(self._learning_rate, gamma, beta)
 
         self._layers.append(new_layer)
         return self
 
     def with_relu_activation(self) -> "NeuralNetwork":
-        latest_layer, num_inputs = self._load_net_characteristics()
 
-        new_layer = ReluActivation(num_inputs)
+        new_layer = ReluActivation()
 
         self._layers.append(new_layer)
         return self
 
     def with_elu_activation(self) -> "NeuralNetwork":
-        latest_layer, num_inputs = self._load_net_characteristics()
 
-        new_layer = EluActivation(num_inputs)
+        new_layer = EluActivation()
 
         self._layers.append(new_layer)
         return self
 
     def with_logistic_activation(self) -> "NeuralNetwork":
-        latest_layer, num_inputs = self._load_net_characteristics()
 
-        new_layer = LogisticActivation(num_inputs)
+        new_layer = LogisticActivation()
 
         self._layers.append(new_layer)
         return self
 
     def with_softmax_activation(self) -> "NeuralNetwork":
-        latest_layer, num_inputs = self._load_net_characteristics()
 
-        new_layer = SoftmaxActivation(num_inputs)
+        new_layer = SoftmaxActivation()
 
         self._layers.append(new_layer)
         return self
 
-    def _load_net_characteristics(self) -> Tuple[Layer, int]:
-        latest_layer = self._layers[-1] if self._layers else None
-        num_inputs = latest_layer.num_outputs if latest_layer else self._num_inputs
-        return latest_layer, num_inputs
+    def with_reshape_layer(self, new_shape: Tuple) -> "NeuralNetwork":
+
+        new_layer = ReshapeLayer(new_shape)
+
+        self._layers.append(new_layer)
+        return self

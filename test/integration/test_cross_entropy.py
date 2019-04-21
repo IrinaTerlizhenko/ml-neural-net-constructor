@@ -45,8 +45,7 @@ def test_article_cross_entropy():
 
 
 def _build_cross_entropy_network() -> NeuralNetwork:
-    # top results with batch norm!
-    return NeuralNetwork(4) \
+    return NeuralNetwork() \
         .with_dense_layer(4) \
         .with_batch_norm() \
         .with_softmax_activation() \
@@ -57,7 +56,7 @@ def _build_cross_entropy_network() -> NeuralNetwork:
 
 
 def _build_article_cross_entropy_network() -> NeuralNetwork:
-    return NeuralNetwork(2, learning_rate=0.5) \
+    return NeuralNetwork(learning_rate=0.5) \
         .with_dense_layer(2, w1, b1) \
         .with_softmax_activation() \
         .with_dense_layer(2, w2, b2) \

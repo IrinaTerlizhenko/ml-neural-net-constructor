@@ -28,7 +28,7 @@ def test_save_trained_network_v2():
 
 
 def _build_article_network() -> NeuralNetwork:
-    return NeuralNetwork(2) \
+    return NeuralNetwork() \
         .with_dense_layer(2, w1, b1) \
         .with_logistic_activation() \
         .with_dense_layer(2, w2, b2) \

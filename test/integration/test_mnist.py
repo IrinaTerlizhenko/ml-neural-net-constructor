@@ -214,7 +214,7 @@ def test_mnist_deep():
 
 
 def _build_batch_norm_after_activation_network() -> NeuralNetwork:
-    return NeuralNetwork(784, learning_rate=0.1) \
+    return NeuralNetwork(learning_rate=0.1) \
         .with_dense_layer(10) \
         .with_softmax_activation() \
         .with_batch_norm() \
@@ -222,14 +222,14 @@ def _build_batch_norm_after_activation_network() -> NeuralNetwork:
 
 
 def _build_simplest_network() -> NeuralNetwork:
-    return NeuralNetwork(784, learning_rate=0.1) \
+    return NeuralNetwork(learning_rate=0.1) \
         .with_dense_layer(10, initial_weights=lambda: 0., initial_biases=lambda: 0.) \
         .with_softmax_activation() \
         .with_square_error()
 
 
 def _build_deep_network() -> NeuralNetwork:
-    return NeuralNetwork(784, learning_rate=0.1) \
+    return NeuralNetwork(learning_rate=0.1) \
         .with_dense_layer(784) \
         .with_softmax_activation() \
         .with_dense_layer(10) \

@@ -1,21 +1,12 @@
 import logging
-from typing import List, Tuple
 
 import numpy as np
 
-from netconstructor.activation import ReluActivation, LogisticActivation, EluActivation, SoftmaxActivation
-from netconstructor.error import SquareError, Error, CrossEntropyError
-from netconstructor.layer import Layer
+from conv_layer import ConvolutionLayer
+from network import NeuralNetwork
 
 
-class ConvolutionNeuralNetwork:
-
-    def __init__(self, num_inputs: int, learning_rate: float = 0.2) -> None:
-        self._num_inputs: int = num_inputs
-        self._learning_rate = learning_rate
-
-        self._layers: List[Layer] = []
-        self._error: Error = None
+class ConvolutionNeuralNetwork(NeuralNetwork):
 
     def train(self, x: np.ndarray, y: np.ndarray, num_iterations: int) -> float:
         if num_iterations <= 0:
@@ -48,53 +39,10 @@ class ConvolutionNeuralNetwork:
 
         return error
 
-    def test(self, x: np.ndarray) -> np.ndarray:
-        pass
+    def with_convolution_layer(self, filters: np.ndarray, padding: int = 0,
+                               stride: int = 1) -> "ConvolutionNeuralNetwork":
 
-    def _reduce_error(self, output_errors: np.ndarray) -> float:
-        return output_errors.sum()  # AXIS=1 if we want to see separate error for each batch element
-
-    def with_square_error(self) -> "ConvolutionNeuralNetwork":
-        self._error = SquareError()
-        return self
-
-    def with_cross_entropy_error(self) -> "ConvolutionNeuralNetwork":
-        self._error = CrossEntropyError()
-        return self
-
-    def with_relu_activation(self) -> "ConvolutionNeuralNetwork":
-        latest_layer, num_inputs = self._load_net_characteristics()
-
-        new_layer = ReluActivation(num_inputs)
+        new_layer = ConvolutionLayer(padding, stride, self._learning_rate, filters)
 
         self._layers.append(new_layer)
         return self
-
-    def with_elu_activation(self) -> "ConvolutionNeuralNetwork":
-        latest_layer, num_inputs = self._load_net_characteristics()
-
-        new_layer = EluActivation(num_inputs)
-
-        self._layers.append(new_layer)
-        return self
-
-    def with_logistic_activation(self) -> "ConvolutionNeuralNetwork":
-        latest_layer, num_inputs = self._load_net_characteristics()
-
-        new_layer = LogisticActivation(num_inputs)
-
-        self._layers.append(new_layer)
-        return self
-
-    def with_softmax_activation(self) -> "ConvolutionNeuralNetwork":
-        latest_layer, num_inputs = self._load_net_characteristics()
-
-        new_layer = SoftmaxActivation(num_inputs)
-
-        self._layers.append(new_layer)
-        return self
-
-    def _load_net_characteristics(self) -> Tuple[Layer, int]:
-        latest_layer = self._layers[-1] if self._layers else None
-        num_inputs = latest_layer.num_outputs if latest_layer else self._num_inputs
-        return latest_layer, num_inputs

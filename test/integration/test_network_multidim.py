@@ -32,7 +32,7 @@ def test_network_article_multiple_iterations():
 
 
 def _build_article_network() -> NeuralNetwork:
-    return NeuralNetwork(2) \
+    return NeuralNetwork() \
         .with_dense_layer(3, w1, b1) \
         .with_logistic_activation() \
         .with_square_error()

@@ -17,3 +17,4 @@ TODO
 1. Activate pytest if you're working in a JetBrains IDE
 
     *File > Settings > Tools > Python Integrated Tools > Testing > Default test runner*
+

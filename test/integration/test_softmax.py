@@ -3,7 +3,7 @@ import logging
 import numpy as np
 
 from network import NeuralNetwork
-from test.integration.utils import w1, b1, w2, b2, x, y
+from integration.utils import w1, b1, w2, b2, x, y
 
 
 X = np.array([1, 2, 3, 4])

@@ -10,8 +10,6 @@ from netconstructor.layer import Layer, DenseLayer, BatchNorm, ReshapeLayer
 
 class NeuralNetwork:
 
-    # todo: different types of learning rate: constant, decreasing, etc.
-
     def __init__(self, learning_rate: float = 0.2) -> None:
         self._learning_rate = learning_rate
 

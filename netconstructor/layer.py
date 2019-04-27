@@ -2,8 +2,8 @@ import logging
 from abc import ABC, abstractmethod
 from typing import Tuple, Callable
 
-import numpy as np
 import math
+import numpy as np
 
 
 class Layer(ABC):
@@ -32,13 +32,12 @@ class DenseLayer(Layer):
         self._bias_initializer = bias_initializer
 
         self._weight = initial_weights
-        # todo: to separate layer
         self._bias = initial_biases
 
         self._current_inputs: np.ndarray = None
 
     def propagate(self, x: np.ndarray) -> np.ndarray:
-        self._current_inputs = x.copy()
+        self._current_inputs = x
 
         num_inputs = x.shape[1]
         num_outputs = self._num_outputs
@@ -60,12 +59,7 @@ class DenseLayer(Layer):
     def back_propagate(self, dx: np.ndarray) -> np.ndarray:
         output_dx = dx.dot(self._weight.T)
 
-        arr = []  # TODO: REFACTOR
-        for single_input_obj, single_gradient in zip(self._current_inputs, dx):
-            arr.append(np.outer(single_input_obj, single_gradient))
-        diff_weights = np.array(arr)
-
-        cumulative_diff_weights = np.sum(diff_weights, 0)
+        cumulative_diff_weights = self._current_inputs.T @ dx
         self._weight -= self._learning_rate * cumulative_diff_weights
 
         logging.debug(f"weights: {self._weight}")
@@ -94,7 +88,7 @@ class BatchNorm(Layer):
         self._current_inputs: np.ndarray = None
 
     def propagate(self, x: np.ndarray, is_train: bool = True) -> np.ndarray:
-        self._current_inputs = x.copy()
+        self._current_inputs = x
 
         mu = np.mean(x, axis=0)
         sigma2 = np.var(x, axis=0)

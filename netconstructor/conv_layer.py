@@ -11,21 +11,20 @@ class ConvolutionLayer(Layer):
         self._stride = stride
         self._learning_rate = learning_rate
 
-        # todo: only odd square kernel size
-        # todo: only kernels of same size
         self._filters = initial_weights
 
         self._current_inputs: np.ndarray = None
 
     def propagate(self, data: np.ndarray) -> np.ndarray:
-        self._current_inputs = data.copy()
+        self._current_inputs = data
 
         pad = self._padding
         stride = self._stride
-        kernel_size = self._filters.shape[1]
+        kernel_size_x = self._filters.shape[1]
+        kernel_size_y = self._filters.shape[2]
 
-        output_x_dim = (data.shape[1] + pad * 2 - (kernel_size - 1)) // stride
-        output_y_dim = (data.shape[2] + pad * 2 - (kernel_size - 1)) // stride
+        output_x_dim = (data.shape[1] + pad * 2 + (stride - kernel_size_x)) // stride
+        output_y_dim = (data.shape[2] + pad * 2 + (stride - kernel_size_y)) // stride
         output = np.zeros(shape=(data.shape[0], output_x_dim, output_y_dim, len(self._filters)))
 
         # don't want to pad by batch and depth dimension
@@ -34,10 +33,10 @@ class ConvolutionLayer(Layer):
 
         for i, weights in enumerate(self._filters):
             curr_x = 0
-            while curr_x + kernel_size <= padded_data.shape[1]:
+            while curr_x + kernel_size_x <= padded_data.shape[1]:
                 curr_y = 0
-                while curr_y + kernel_size <= padded_data.shape[2]:
-                    window = padded_data[:, curr_x: curr_x + kernel_size, curr_y: curr_y + kernel_size, :]
+                while curr_y + kernel_size_y <= padded_data.shape[2]:
+                    window = padded_data[:, curr_x: curr_x + kernel_size_x, curr_y: curr_y + kernel_size_y, :]
                     for j, batch_item in enumerate(window):  # [curr_x:curr_x + stride, curr_y:curr_y + stride, :]
                         sum_by_depth = np.sum(batch_item, axis=2)
                         convolved = sum_by_depth * weights
@@ -54,7 +53,8 @@ class ConvolutionLayer(Layer):
         data = self._current_inputs
         pad = self._padding
         stride = self._stride
-        kernel_size = self._filters.shape[1]
+        kernel_size_x = self._filters.shape[1]
+        kernel_size_y = self._filters.shape[2]
 
         # don't want to pad by batch and depth dimension
         pad_mask = ((0, 0), (pad, pad), (pad, pad), (0, 0),)
@@ -65,18 +65,18 @@ class ConvolutionLayer(Layer):
         for i, weights in enumerate(self._filters):
             curr_x = 0
             output_i = 0
-            while curr_x + kernel_size <= padded_data.shape[1]:
+            while curr_x + kernel_size_x <= padded_data.shape[1]:
                 curr_y = 0
                 output_j = 0
-                while curr_y + kernel_size <= padded_data.shape[2]:
-                    window = padded_data[:, curr_x: curr_x + kernel_size, curr_y: curr_y + kernel_size, :]
+                while curr_y + kernel_size_y <= padded_data.shape[2]:
+                    window = padded_data[:, curr_x: curr_x + kernel_size_x, curr_y: curr_y + kernel_size_y, :]
                     summed_window = np.sum(window, axis=3)
                     for j, batch_item in enumerate(summed_window):  # [curr_x:curr_x + stride, curr_y:curr_y + stride]
                         output_dw[i] += dx[j][output_i][output_j][i] * batch_item
                         # [ batch : i : j : depth ]
-                        padded_output_dx[j][curr_x: curr_x + kernel_size, curr_y: curr_y + kernel_size] += \
+                        padded_output_dx[j][curr_x: curr_x + kernel_size_x, curr_y: curr_y + kernel_size_y] += \
                             np.tile(dx[j][output_i][output_j][i] * weights, padded_output_dx.shape[3]).reshape(
-                                (kernel_size, kernel_size, padded_output_dx.shape[3]))
+                                (kernel_size_x, kernel_size_y, padded_output_dx.shape[3]))
                     curr_y += stride
                     output_j += 1
                 curr_x += stride

@@ -1,6 +1,6 @@
 import pickle
 
-from network import NeuralNetwork
+from netconstructor.network import NeuralNetwork
 
 
 def save(network: NeuralNetwork, file):

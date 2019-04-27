@@ -2,8 +2,8 @@ import numpy as np
 import tempfile
 
 from integration.utils import w1, b1, w2, b2, x, y
-from network import NeuralNetwork
-from saver import save, load
+from netconstructor.network import NeuralNetwork
+from netconstructor.saver import save, load
 
 
 def test_save_trained_network_v2():

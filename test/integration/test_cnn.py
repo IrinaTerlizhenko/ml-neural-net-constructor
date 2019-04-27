@@ -2,8 +2,8 @@ import logging
 
 import numpy as np
 
-from conv_network import ConvolutionNeuralNetwork
-from datareader import load_from_img
+from netconstructor.conv_network import ConvolutionNeuralNetwork
+from netconstructor.datareader import load_from_img
 from test import TEST_ROOT_DIR
 
 logging.basicConfig(level=logging.INFO)

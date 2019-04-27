@@ -1,6 +1,6 @@
 import numpy as np
 
-from layer import Layer
+from netconstructor.layer import Layer
 
 
 class ConvolutionLayer(Layer):

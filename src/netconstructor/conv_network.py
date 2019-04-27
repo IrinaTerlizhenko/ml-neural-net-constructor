@@ -2,8 +2,8 @@ import logging
 
 import numpy as np
 
-from conv_layer import ConvolutionLayer
-from network import NeuralNetwork
+from netconstructor.conv_layer import ConvolutionLayer
+from netconstructor.network import NeuralNetwork
 
 
 class ConvolutionNeuralNetwork(NeuralNetwork):

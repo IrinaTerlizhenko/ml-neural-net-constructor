@@ -1,4 +1,4 @@
-from datareader import load_from_csv, load_from_img
+from netconstructor.datareader import load_from_csv, load_from_img
 from test import TEST_ROOT_DIR
 
 

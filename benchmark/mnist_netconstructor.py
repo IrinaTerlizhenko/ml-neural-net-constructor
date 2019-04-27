@@ -3,7 +3,7 @@ import time
 import numpy as np
 import tensorflow as tf
 
-from network import NeuralNetwork
+from netconstructor.network import NeuralNetwork
 
 NUM_CLASSES = 10
 

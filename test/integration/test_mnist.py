@@ -223,7 +223,7 @@ def _build_batch_norm_after_activation_network() -> NeuralNetwork:
 
 def _build_simplest_network() -> NeuralNetwork:
     return NeuralNetwork(learning_rate=0.1) \
-        .with_dense_layer(10, initial_weights=lambda: 0., initial_biases=lambda: 0.) \
+        .with_dense_layer(10, initial_weights=lambda i, j: 0., initial_biases=lambda i: 0.) \
         .with_softmax_activation() \
         .with_square_error()
 

@@ -3,6 +3,7 @@ import logging
 import numpy as np
 
 from netconstructor.conv_layer import ConvolutionLayer
+from netconstructor.max_pooling import MaxpoolingLayer
 from netconstructor.network import NeuralNetwork
 
 
@@ -43,6 +44,13 @@ class ConvolutionNeuralNetwork(NeuralNetwork):
                                stride: int = 1) -> "ConvolutionNeuralNetwork":
 
         new_layer = ConvolutionLayer(padding, stride, self._learning_rate, filters)
+
+        self._layers.append(new_layer)
+        return self
+
+    def with_max_pooling(self, kernel_size: int, stride: int) -> "ConvolutionNeuralNetwork":
+
+        new_layer = MaxpoolingLayer(kernel_size, stride)
 
         self._layers.append(new_layer)
         return self

@@ -14,9 +14,18 @@
 
     ```python
     from netconstructor.network import NeuralNetwork
-    net = NeuralNetwork()
+    net = NeuralNetwork()\
+       .with_dense_layer(...)\
+       .with_logistic_activation()\
+       .with_square_error()
     net.train(x, y, num_iterations)
+    error = net.test(x_test)
     ```
+
+The sample can be found [here](dev_docs/netconstructor_sample.py). `numpy` and `tensorflow` are required in 
+order to run this sample (`tensorflow` is used only to load MNIST data). They can be installed separately 
+or with `pip install -r requirements/requirements_dev.txt` (note: this also installs a bunch of other dev 
+dependencies).
 
 ## Benchmark results
 

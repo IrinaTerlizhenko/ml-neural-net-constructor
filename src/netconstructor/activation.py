@@ -128,6 +128,10 @@ class SoftmaxActivation(Layer):
         return self._current_output
 
     def back_propagate(self, dx: np.ndarray) -> np.ndarray:
-        softmax_dx = self._current_output * (np.sum(self._current_output, axis=1, keepdims=True) - self._current_output)
+        out_dx = []
 
-        return softmax_dx * dx
+        for batch_item, dx_batch_item in zip(self._current_output, dx):
+            item_softmax_dx = np.diagflat(batch_item) - np.outer(batch_item, batch_item)
+            out_dx.append(dx_batch_item @ item_softmax_dx)
+
+        return np.array(out_dx)

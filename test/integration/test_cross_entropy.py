@@ -23,7 +23,7 @@ logging.basicConfig(level=logging.INFO)
 def test_cross_entropy():
     net = _build_cross_entropy_network()
 
-    net.train(X, Y, 60)
+    net.train(X, Y, 1000)
 
     # todo: assert
 

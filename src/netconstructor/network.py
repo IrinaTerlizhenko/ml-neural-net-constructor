@@ -25,6 +25,7 @@ class NeuralNetwork:
 
         # reshape to at least two dimensional array
         output = x.copy() if len(x.shape) > 1 else x.copy().reshape(1, len(x))
+        y = y.copy()
 
         for i in range(0, num_iterations):
             for layer in self._layers:
@@ -70,14 +71,14 @@ class NeuralNetwork:
 
         weight = None
         weight_initializer = None
-        if type(initial_weights) is Callable:
+        if callable(initial_weights):
             weight_initializer = initial_weights
         elif type(initial_weights) is np.ndarray:
             weight = initial_weights
 
         bias = None
         bias_initializer = None
-        if type(initial_biases) is Callable:
+        if callable(initial_biases):
             bias_initializer = initial_biases
         elif type(initial_biases) is np.ndarray:
             bias = initial_biases

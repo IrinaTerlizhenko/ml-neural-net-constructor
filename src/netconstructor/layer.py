@@ -44,13 +44,13 @@ class DenseLayer(Layer):
 
         if self._weight is None:
             if self._weight_initializer:
-                self._weight = np.fromfunction(self._weight_initializer, (num_inputs, num_outputs))
+                self._weight = np.fromfunction(np.vectorize(self._weight_initializer), (num_inputs, num_outputs))
             else:
                 self._weight = np.random.uniform(-1. / math.sqrt(num_inputs), 1. / math.sqrt(num_inputs),
                                                  num_inputs * num_outputs).reshape(num_inputs, num_outputs)
         if self._bias is None:
             if self._bias_initializer:
-                self._bias = np.fromfunction(self._bias_initializer, (num_outputs,))
+                self._bias = np.fromfunction(np.vectorize(self._bias_initializer), (num_outputs,))
             else:
                 self._bias = np.zeros(shape=(1, num_outputs))
 

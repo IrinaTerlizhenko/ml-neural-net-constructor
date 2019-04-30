@@ -34,7 +34,7 @@ Available on [this page](benchmark/Benchmark%20results.md).
 ## Development docs
 
 1. [Technical task](dev_docs/Technical%20Task.md)
-1. [Work done](dev_docs/Technical%20Task.md)
+1. [Work done](dev_docs/Work%20Done.md)
 
 ## Usage from source code
 
